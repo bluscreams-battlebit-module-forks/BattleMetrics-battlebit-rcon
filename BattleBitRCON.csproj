@@ -5,6 +5,19 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>BattleMetrics.BattleBitRCON</PackageId>
+    <Title>BattleBit RCON by BattleMetrics</Title>
+    <Authors>BattleMetrics</Authors>
+    <Company>BattleMetrics LLC</Company>
+    <Description>A simple RCON implementation for BattleBit using WebSockets. This package was designed for BattleMetrics RCON.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://www.battlemetrics.com/subscription/rcon</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://gitlab.com/BattleMetrics/battlebit-rcon</RepositoryUrl>
+    <PackageTags>BattleBit</PackageTags>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
+    <None Include="README.md" Pack="true" PackagePath=""/>
   </ItemGroup>
 
 </Project>
