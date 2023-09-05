@@ -1,0 +1,297 @@
+using BattleBitAPI;
+using System.Data;
+using System.Net;
+using System.Net.WebSockets;
+using System.Reflection;
+using System.Text.Json;
+using Microsoft.Extensions.Configuration;
+using BattleBitAPI.Server;
+
+namespace BattleBitRCON
+{
+    public class WebSocketServer<TPlayer, TGameServer> : IDisposable
+        where TPlayer : Player<TPlayer>
+        where TGameServer : GameServer<TPlayer>
+    {
+        static readonly JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            IgnoreReadOnlyFields = false,
+        };
+
+        private HttpListener? listener = null;
+
+        private HashSet<WebSocket> clients = new HashSet<WebSocket>();
+
+        // Map all lowercase command name => namespace
+        private Dictionary<string, Type> commandNames;
+
+        private string listenIP;
+        private int listenPort;
+        private string password;
+
+        public WebSocketServer(TGameServer gameServer)
+        {
+            // Find all BattleBitRCON.Commands.*.Request classes
+            var commandNamespaces = Assembly
+                .GetExecutingAssembly()
+                .GetTypes()
+                .Where(
+                    t =>
+                        t.IsClass
+                        && t.Namespace?.StartsWith("BattleBitRCON.Commands.") == true
+                        && t.Name.StartsWith("Request")
+                )
+                .ToList();
+
+            commandNames = new Dictionary<string, Type>();
+
+            foreach (var cmd in commandNamespaces)
+            {
+                // Getting command name from namespace
+                var name = cmd.Namespace?.Split(".").Last().ToLower();
+                if (name != null)
+                {
+                    commandNames.TryAdd(name, cmd);
+                }
+            }
+
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build()
+                .GetSection("BattleBitRCON");
+
+            var serverConfig = config.GetSection($"{gameServer.GameIP}:{gameServer.GamePort}");
+            var ip = serverConfig["ip"] ?? "0.0.0.0";
+
+            int port;
+            if (!int.TryParse(serverConfig["port"], out port))
+            {
+                port = gameServer.GamePort + 1;
+            }
+
+            var password = serverConfig["password"];
+            if (password == null)
+            {
+                // This should probably just be a fatal error, but it's useful for testing.
+                password = Guid.NewGuid().ToString();
+                Console.WriteLine(
+                    $"No RCON password found. Please set a secure password. Using: {password}"
+                );
+            }
+
+            this.listenIP = ip;
+            this.listenPort = port;
+            this.password = password;
+        }
+
+        public void Dispose()
+        {
+            if (listener != null)
+            {
+                listener.Stop();
+            }
+        }
+
+        public async void Start()
+        {
+            listener = new HttpListener();
+            var prefix = $"http://{listenIP}:{listenPort}/";
+            listener.Prefixes.Add(prefix);
+
+            listener.Start();
+            Console.WriteLine($"Listening on {listenIP}:{listenPort}");
+
+            while (listener.IsListening)
+            {
+                HttpListenerContext listenerContext;
+                try
+                {
+                    listenerContext = await listener.GetContextAsync();
+                }
+                catch
+                {
+                    break;
+                }
+
+                if (
+                    listenerContext.Request.IsWebSocketRequest
+                    && listenerContext.Request.Headers.Get("x-password") == password
+                )
+                {
+                    ProcessRequest(listenerContext);
+                }
+                else
+                {
+                    listenerContext.Response.StatusCode = 401;
+                    listenerContext.Response.Close();
+                }
+            }
+        }
+
+        public void Stop()
+        {
+            if (listener != null)
+            {
+                listener.Stop();
+                listener = null;
+            }
+        }
+
+        private async void ProcessRequest(HttpListenerContext listenerContext)
+        {
+            WebSocketContext? webSocketContext;
+            try
+            {
+                webSocketContext = await listenerContext.AcceptWebSocketAsync(subProtocol: null);
+            }
+            catch (Exception e)
+            {
+                listenerContext.Response.StatusCode = 500;
+                listenerContext.Response.Close();
+                Console.WriteLine("Exception: {0}", e);
+                return;
+            }
+
+            WebSocket webSocket = webSocketContext.WebSocket;
+            clients.Add(webSocket);
+
+            try
+            {
+                // Commands should be pretty short.
+                byte[] receiveBuffer = new byte[1024];
+
+                while (webSocket.State == WebSocketState.Open)
+                {
+                    WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(
+                        new ArraySegment<byte>(receiveBuffer),
+                        CancellationToken.None
+                    );
+
+                    if (receiveResult.MessageType == WebSocketMessageType.Text)
+                    {
+                        await ProcessCommand(webSocket, receiveResult, receiveBuffer);
+                    }
+                    else if (receiveResult.MessageType == WebSocketMessageType.Close)
+                    {
+                        await webSocket.CloseAsync(
+                            WebSocketCloseStatus.NormalClosure,
+                            "",
+                            CancellationToken.None
+                        );
+                    }
+                    else
+                    {
+                        await webSocket.CloseAsync(
+                            WebSocketCloseStatus.InvalidMessageType,
+                            "Only text frames are supported.",
+                            CancellationToken.None
+                        );
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // Just log any exceptions to the console. Pretty much any exception that occurs when calling `SendAsync`/`ReceiveAsync`/`CloseAsync` is unrecoverable in that it will abort the connection and leave the `WebSocket` instance in an unusable state.
+                Console.WriteLine("Exception: {0}", e);
+            }
+            finally
+            {
+                // Clean up by disposing the WebSocket once it is closed/aborted.
+                if (webSocket != null)
+                {
+                    webSocket.Dispose();
+                    clients.Remove(webSocket);
+                }
+            }
+        }
+
+        private async Task ProcessCommand(WebSocket ws, WebSocketReceiveResult result, byte[] buff)
+        {
+            try
+            {
+                // Deserialize just enough to get the type
+                var cmd = JsonSerializer.Deserialize<Commands.CommandType>(
+                    new ArraySegment<byte>(buff, 0, result.Count),
+                    jsonSerializationOptions
+                );
+
+                if (cmd != null)
+                {
+                    // Validate message type and create generic version of type
+                    // to use when invoking parse and execute.
+                    if (cmd.Command != null && commandNames.ContainsKey(cmd.Command.ToLower()))
+                    {
+                        var commandType = commandNames[cmd.Command.ToLower()];
+                        var genericType = commandType?.MakeGenericType(typeof(TPlayer));
+                        var parse = genericType?.GetMethod("Parse");
+                        var execute = genericType?.GetMethod("Execute");
+
+                        if (
+                            commandType == null
+                            || parse == null
+                            || execute == null
+                            || genericType == null
+                        )
+                        {
+                            throw new Exception("Unable to get Request class for command");
+                        }
+
+                        var parsedCommand = parse.Invoke(
+                            genericType,
+                            new object[1] { new ArraySegment<byte>(buff, 0, result.Count) }
+                        );
+
+                        if (parsedCommand == null)
+                        {
+                            throw new Exception("Unable to get Request class for command");
+                        }
+
+                        var response = execute.Invoke(null, new object[2] { this, parsedCommand });
+                        if (response != null)
+                        {
+                            await SendMessage(ws, response);
+                        }
+                    }
+                    else
+                    {
+                        throw new Commands.InvalidCommand(cmd.Command);
+                    }
+                }
+            }
+            catch (Commands.InvalidCommand e)
+            {
+                await ws.SendAsync(
+                    JsonSerializer.SerializeToUtf8Bytes(
+                        new { type = Commands.InvalidCommand.Type, message = e.Message, },
+                        jsonSerializationOptions
+                    ),
+                    WebSocketMessageType.Text,
+                    true,
+                    CancellationToken.None
+                );
+            }
+        }
+
+        public async Task SendMessage(WebSocket ws, object msg)
+        {
+            await ws.SendAsync(
+                JsonSerializer.SerializeToUtf8Bytes(msg, msg.GetType(), jsonSerializationOptions),
+                WebSocketMessageType.Text,
+                true,
+                CancellationToken.None
+            );
+        }
+
+        public async Task BroadcastMessage(object msg)
+        {
+            await Task.WhenAny(
+                clients
+                    .ToList()
+                    .Where(ws => ws.State == WebSocketState.Open)
+                    .Select(ws => SendMessage(ws, msg))
+            );
+        }
+    }
+}
