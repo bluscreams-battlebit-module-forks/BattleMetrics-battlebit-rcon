@@ -1,0 +1,17 @@
+stages:
+  - build
+  - release
+
+build-common:
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  stage: build
+  rules:
+    changes:
+      - Common/**/*
+  artifacts:
+    paths:
+      - bin/Release/net6.0/Common.dll
+  script:
+    - cd Common
+    - dotnet restore
+    - dotnet build --no-restore -c 'Release'
