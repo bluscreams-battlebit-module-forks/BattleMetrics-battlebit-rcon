@@ -80,7 +80,7 @@ release-module:
     description: "Module Release $CI_COMMIT_TAG"
     assets:
       links:
-        - name: "BattleMetricsRCONModule.zip"
+        - name: "BattleMetricsRCONModule-$CI_COMMIT_TAG.zip"
           filepath: "/BattleMetricsRCONModule.zip"
           url: "https://gitlab.com/BattleMetrics/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/download"
           link_type: package
