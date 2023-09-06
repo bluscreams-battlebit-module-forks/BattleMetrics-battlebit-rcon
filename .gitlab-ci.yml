@@ -51,4 +51,6 @@ build-rcon-server:
       - RCONServer/bin/Release/**/*
   script:
     - cd RCONServer
+    - dotnet restore
+    - dotnet build --no-restore -c 'Release'
     - dotnet pack -c 'Release'
