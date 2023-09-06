@@ -81,5 +81,6 @@ release-module:
     assets:
       links:
         - name: "BattleMetricsRCONModule.zip"
+          filepath: "BattleMetricsRCONModule.zip"
           url: "https://gitlab.com/BattleMetrics/$CI_PROJECT_NAME/-/jobs/$CI_JOB_ID/artifacts/download"
           link_type: package
