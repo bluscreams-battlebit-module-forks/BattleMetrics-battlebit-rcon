@@ -15,3 +15,21 @@ build-common:
     - cd Common
     - dotnet restore
     - dotnet build --no-restore -c 'Release'
+
+build-module:
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  stage: build
+  needs:
+    - job: build-common
+      artifacts: true
+  rules:
+    - changes:
+      - Common/**/*
+      - RCONModule/**/*
+  artifacts:
+    paths:
+      - Common/bin/Release/net6.0/Common.dll
+  script:
+    - mkdir -p BattleMetricsRCONModule/{dependencies,modules}
+    - cp RCONModule/BattleMetricsRCON.cs BattleMetricsRCONModule/modules/BattleMetricsRCON.cs
+    - cp Common/bin/Release/net6.0/Common.dll BattleMetricsRCONModule/dependencies/BattleMetricsRCON.dll
