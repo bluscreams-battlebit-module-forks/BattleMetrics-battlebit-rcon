@@ -10,7 +10,7 @@ build-common:
       - "Common/**/*"
   artifacts:
     paths:
-      - bin/Release/net6.0/Common.dll
+      - Common/bin/Release/net6.0/Common.dll
   script:
     - cd Common
     - dotnet restore
