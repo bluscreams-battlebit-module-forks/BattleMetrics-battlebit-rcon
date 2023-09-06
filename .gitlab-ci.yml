@@ -8,6 +8,8 @@ build-common:
   rules:
     - changes:
         - "Common/**/*"
+        - RCONModule/**/*
+        - RCONServer/**/*
   artifacts:
     paths:
       - Common/bin/Release/net6.0/*
@@ -37,6 +39,9 @@ build-module:
 build-rcon-server:
   image: mcr.microsoft.com/dotnet/sdk:6.0
   stage: build
+  rules:
+    - changes:
+        - RCONServer/**/*
   needs:
     - job: build-common
       artifacts: true
