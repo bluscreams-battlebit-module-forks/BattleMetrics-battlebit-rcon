@@ -62,9 +62,16 @@ release-module:
   rules:
     - if: $CI_COMMIT_TAG =~ /v.+-module/
   needs:
-    - job: build-module
+    - job: build-common
       artifacts: true
-  script: echo "Running the release job for the new tag."
+  artifacts:
+    name: BattleMetricsRCONModule
+    paths:
+      - BattleMetricsRCONModule
+  script:
+    - mkdir -p BattleMetricsRCONModule/{dependencies,modules}
+    - cp RCONModule/BattleMetricsRCON.cs BattleMetricsRCONModule/modules/BattleMetricsRCON.cs
+    - cp Common/bin/Release/net6.0/Common.dll BattleMetricsRCONModule/dependencies/BattleMetricsRCON.dll
   release:
     tag_name: $CI_COMMIT_TAG
     name: "Module Release $CI_COMMIT_TAG"
