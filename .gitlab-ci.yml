@@ -7,10 +7,10 @@ build-common:
   stage: build
   rules:
     - changes:
-      - "Common/**/*"
+        - "Common/**/*"
   artifacts:
     paths:
-      - Common/bin/Release/net6.0/Common.dll
+      - Common/bin/Release/net6.0/*
   script:
     - cd Common
     - dotnet restore
@@ -24,8 +24,8 @@ build-module:
       artifacts: true
   rules:
     - changes:
-      - Common/**/*
-      - RCONModule/**/*
+        - Common/**/*
+        - RCONModule/**/*
   artifacts:
     paths:
       - BattleMetricsRCONModule
@@ -33,3 +33,17 @@ build-module:
     - mkdir -p BattleMetricsRCONModule/{dependencies,modules}
     - cp RCONModule/BattleMetricsRCON.cs BattleMetricsRCONModule/modules/BattleMetricsRCON.cs
     - cp Common/bin/Release/net6.0/Common.dll BattleMetricsRCONModule/dependencies/BattleMetricsRCON.dll
+
+build-rcon-server:
+  image: mcr.microsoft.com/dotnet/sdk:6.0
+  stage: build
+  needs:
+    - job: build-common
+      artifacts: true
+  artifacts:
+    paths:
+      - Common/bin/Release/net6.0/*
+      - RCONServer/bin/Release/**/*
+  script:
+    - cd RCONServer
+    - dotnet pack -c 'Release'
