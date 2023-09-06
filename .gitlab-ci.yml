@@ -66,6 +66,7 @@ release-module:
       artifacts: true
   artifacts:
     name: BattleMetricsRCONModule
+    expire_in: never
     paths:
       - BattleMetricsRCONModule
   script:
@@ -77,3 +78,7 @@ release-module:
     tag_name: $CI_COMMIT_TAG
     name: "Module Release $CI_COMMIT_TAG"
     description: "Module Release $CI_COMMIT_TAG"
+  assets:
+    links:
+      - name: "BattleMetricsRCONModule.zip"
+        url: "https://gitlab.com/BattleMetrics/$CI_PROJECT_NAME/-/jobs/$JOB_ID/artifacts/download"
