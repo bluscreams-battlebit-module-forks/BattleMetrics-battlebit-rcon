@@ -28,7 +28,7 @@ build-module:
       - RCONModule/**/*
   artifacts:
     paths:
-      - Common/bin/Release/net6.0/Common.dll
+      - BattleMetricsRCONModule
   script:
     - mkdir -p BattleMetricsRCONModule/{dependencies,modules}
     - cp RCONModule/BattleMetricsRCON.cs BattleMetricsRCONModule/modules/BattleMetricsRCON.cs
