@@ -65,7 +65,7 @@ release-module:
     - job: build-common
       artifacts: true
   artifacts:
-    name: BattleMetricsRCONModule
+    name: BattleMetricsRCONModule-$CI_COMMIT_TAG
     expire_in: never
     paths:
       - BattleMetricsRCONModule
