@@ -6,7 +6,10 @@ This implements a WebSocket based protocol for the BattleBit Community API to al
 
 ## BattleBit API Runner
 
-You can go to releases and drop the latest version in your BattleBit API Runner directory. Both the `BattleMetricsRCON.cs` module and `BattleMetricsRCON.dll` dependency are required.
+A module compatible with the BattleBit API Runner is available for users who want the easiest setup method. Both the `BattleMetricsRCON.cs` module and `BattleMetricsRCON.dll` dependency are required.
+
+You can use the following link to download the latest release:
+[https://gitlab.com/BattleMetrics/battlebit-rcon/-/releases/permalink/latest/downloads/BattleMetricsRCONModule.zip](https://gitlab.com/BattleMetrics/battlebit-rcon/-/releases/permalink/latest/downloads/BattleMetricsRCONModule.zip)
 
 A server configuration for the RCON IP, port, and password is required. If one is not provided a config file will be generated with default values. By default the RCON server will listen on all IPs on the connecting game port + 1. A random 32 character password will be generated and saved.
 
@@ -23,6 +26,8 @@ Example config:
 ```
 
 For more information see the [BattleBit API Runner Hosting Guide](https://github.com/BattleBit-Community-Servers/BattleBitAPIRunner/wiki/Hosting-Guide).
+
+Past releases are listed under [Deploy -> Releases](https://gitlab.com/BattleMetrics/battlebit-rcon/-/releases).
 
 ## Manually
 
