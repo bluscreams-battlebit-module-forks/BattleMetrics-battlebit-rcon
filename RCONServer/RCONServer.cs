@@ -1,17 +1,43 @@
 using BattleBitAPI;
 using BattleBitAPI.Common;
 using BattleBitAPI.Server;
+using Microsoft.Extensions.Configuration;
 
 namespace BattleBitRCON
 {
     public class RCONServer<TPlayer> : GameServer<TPlayer>, IDisposable
         where TPlayer : Player<TPlayer>
     {
-        private WebSocketServer<TPlayer, GameServer<TPlayer>> wss;
+        private WebSocketServer<TPlayer> wss;
 
         public RCONServer()
         {
-            wss = new WebSocketServer<TPlayer, GameServer<TPlayer>>(this);
+            var config = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build()
+                .GetSection("BattleBitRCON");
+
+            var serverConfig = config.GetSection($"{GameIP}:{GamePort}");
+            var ip = serverConfig["ip"] ?? "0.0.0.0";
+
+            int port;
+            if (!int.TryParse(serverConfig["port"], out port))
+            {
+                port = GamePort + 1;
+            }
+
+            var password = serverConfig["password"];
+            if (password == null)
+            {
+                // This should probably just be a fatal error, but it's useful for testing.
+                password = Guid.NewGuid().ToString();
+                Console.WriteLine(
+                    $"No RCON password found. Please set a secure password. Using: {password}"
+                );
+            }
+
+            wss = new WebSocketServer<TPlayer>(this, ip, port, password);
         }
 
         public new void Dispose()

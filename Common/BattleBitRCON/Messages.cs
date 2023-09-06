@@ -5,7 +5,7 @@ using BattleBitRCON.Common;
 
 namespace BattleBitRCON.Messages
 {
-    class OnPlayerConnected<TPlayer>
+    public class OnPlayerConnected<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerConnected";
@@ -17,7 +17,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerDisconnected<TPlayer>
+    public class OnPlayerDisconnected<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerDisconnected";
@@ -29,7 +29,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerTypedMessage<TPlayer>
+    public class OnPlayerTypedMessage<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerTypedMessage";
@@ -48,7 +48,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerChangedRole<TPlayer>
+    public class OnPlayerChangedRole<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerChangedRole";
@@ -62,7 +62,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerJoinedSquad<TPlayer>
+    public class OnPlayerJoinedSquad<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerJoinedSquad";
@@ -80,7 +80,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnSquadLeaderChanged<TPlayer>
+    public class OnSquadLeaderChanged<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnSquadLeaderChanged";
@@ -96,7 +96,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerLeftSquad<TPlayer>
+    public class OnPlayerLeftSquad<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerLeftSquad";
@@ -110,7 +110,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerChangeTeam<TPlayer>
+    public class OnPlayerChangeTeam<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerChangeTeam";
@@ -124,7 +124,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnSquadPointsChanged<TPlayer>
+    public class OnSquadPointsChanged<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnSquadPointsChanged";
@@ -138,7 +138,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerSpawned<TPlayer>
+    public class OnPlayerSpawned<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerSpawned";
@@ -150,7 +150,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerDied<TPlayer>
+    public class OnPlayerDied<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerDied";
@@ -162,7 +162,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerGivenUp<TPlayer>
+    public class OnPlayerGivenUp<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerGivenUp";
@@ -174,7 +174,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnAPlayerDownedAnotherPlayer<TPlayer>
+    public class OnAPlayerDownedAnotherPlayer<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnAPlayerDownedAnotherPlayer";
@@ -210,7 +210,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnAPlayerRevivedAnotherPlayer<TPlayer>
+    public class OnAPlayerRevivedAnotherPlayer<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnAPlayerRevivedAnotherPlayer";
@@ -224,7 +224,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnPlayerReported<TPlayer>
+    public class OnPlayerReported<TPlayer>
         where TPlayer : Player<TPlayer>
     {
         public string Type { get; } = "OnPlayerReported";
@@ -243,7 +243,7 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnGameStateChanged
+    public class OnGameStateChanged
     {
         public string Type { get; } = "OnGameStateChanged";
         public GameState OldState { get; set; }
@@ -256,12 +256,12 @@ namespace BattleBitRCON.Messages
         }
     }
 
-    class OnRoundStarted
+    public class OnRoundStarted
     {
         public string Type { get; } = "OnRoundStarted";
     }
 
-    class OnRoundEnded
+    public class OnRoundEnded
     {
         public string Type { get; } = "OnRoundEnded";
     }

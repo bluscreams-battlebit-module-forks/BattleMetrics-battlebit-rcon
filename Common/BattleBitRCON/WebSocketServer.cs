@@ -1,17 +1,15 @@
 using BattleBitAPI;
+using BattleBitAPI.Server;
 using System.Data;
 using System.Net;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
-using BattleBitAPI.Server;
 
 namespace BattleBitRCON
 {
-    public class WebSocketServer<TPlayer, TGameServer> : IDisposable
+    public class WebSocketServer<TPlayer> : IDisposable
         where TPlayer : Player<TPlayer>
-        where TGameServer : GameServer<TPlayer>
     {
         static readonly JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions
         {
@@ -30,8 +28,17 @@ namespace BattleBitRCON
         private int listenPort;
         private string password;
 
-        public WebSocketServer(TGameServer gameServer)
+        private GameServer<TPlayer> gameServer;
+
+        public WebSocketServer(
+            GameServer<TPlayer> gameServer,
+            string listenIP,
+            int listenPort,
+            string password
+        )
         {
+            this.gameServer = gameServer;
+
             // Find all BattleBitRCON.Commands.*.Request classes
             var commandNamespaces = Assembly
                 .GetExecutingAssembly()
@@ -56,33 +63,8 @@ namespace BattleBitRCON
                 }
             }
 
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .Build()
-                .GetSection("BattleBitRCON");
-
-            var serverConfig = config.GetSection($"{gameServer.GameIP}:{gameServer.GamePort}");
-            var ip = serverConfig["ip"] ?? "0.0.0.0";
-
-            int port;
-            if (!int.TryParse(serverConfig["port"], out port))
-            {
-                port = gameServer.GamePort + 1;
-            }
-
-            var password = serverConfig["password"];
-            if (password == null)
-            {
-                // This should probably just be a fatal error, but it's useful for testing.
-                password = Guid.NewGuid().ToString();
-                Console.WriteLine(
-                    $"No RCON password found. Please set a secure password. Using: {password}"
-                );
-            }
-
-            this.listenIP = ip;
-            this.listenPort = port;
+            this.listenIP = listenIP;
+            this.listenPort = listenPort;
             this.password = password;
         }
 
@@ -248,7 +230,10 @@ namespace BattleBitRCON
                             throw new Exception("Unable to get Request class for command");
                         }
 
-                        var response = execute.Invoke(null, new object[2] { this, parsedCommand });
+                        var response = execute.Invoke(
+                            null,
+                            new object[2] { gameServer, parsedCommand }
+                        );
                         if (response != null)
                         {
                             await SendMessage(ws, response);

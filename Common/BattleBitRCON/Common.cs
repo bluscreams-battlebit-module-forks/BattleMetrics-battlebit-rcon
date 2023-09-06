@@ -3,7 +3,7 @@ using BattleBitAPI.Common;
 
 namespace BattleBitRCON.Common
 {
-    class PlayerInfo
+    public class PlayerInfo
     {
         public bool InVehicle { get; set; }
         public string Name { get; set; }
