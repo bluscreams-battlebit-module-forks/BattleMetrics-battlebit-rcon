@@ -68,3 +68,4 @@ release-module:
   release:
     tag_name: $CI_COMMIT_TAG
     name: "Module Release $CI_COMMIT_TAG"
+    description: "Module Release $CI_COMMIT_TAG"
