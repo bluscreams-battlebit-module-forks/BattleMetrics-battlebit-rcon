@@ -69,7 +69,8 @@ release-module:
     paths:
       - BattleMetricsRCONModule
   script:
-    - mkdir -p BattleMetricsRCONModule/{dependencies,modules}
+    - mkdir -p BattleMetricsRCONModule/dependencies
+    - mkdir -p BattleMetricsRCONModule/modules
     - cp RCONModule/BattleMetricsRCON.cs BattleMetricsRCONModule/modules/BattleMetricsRCON.cs
     - cp Common/bin/Release/net6.0/Common.dll BattleMetricsRCONModule/dependencies/BattleMetricsRCON.dll
   release:
