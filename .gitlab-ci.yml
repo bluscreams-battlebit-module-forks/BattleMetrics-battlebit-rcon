@@ -6,8 +6,8 @@ build-common:
   image: mcr.microsoft.com/dotnet/sdk:6.0
   stage: build
   rules:
-    changes:
-      - Common/**/*
+    - changes:
+      - "Common/**/*"
   artifacts:
     paths:
       - bin/Release/net6.0/Common.dll
