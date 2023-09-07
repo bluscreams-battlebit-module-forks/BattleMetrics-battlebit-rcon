@@ -20,7 +20,7 @@ public class BattleMetricsRCON : BattleBitModule
 
     private WebSocketServer<RunnerPlayer>? wss;
 
-    public override void OnModulesLoaded()
+    private void initializeWebSocketServer()
     {
         if (string.IsNullOrEmpty(BattleMetricsRCONConfiguration.RCONIP))
         {
@@ -39,41 +39,47 @@ public class BattleMetricsRCON : BattleBitModule
 
         BattleMetricsRCONConfiguration.Save();
 
-        try
-        {
-            wss = new WebSocketServer<RunnerPlayer>(
-                Server,
-                BattleMetricsRCONConfiguration.RCONIP,
-                BattleMetricsRCONConfiguration.RCONPort,
-                BattleMetricsRCONConfiguration.Password
-            );
-        }
-        catch (Exception ex)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Failed to start RCON server: " + ex.Message);
-            Console.ResetColor();
-            this.Unload();
-        }
+        wss = new WebSocketServer<RunnerPlayer>(
+            Server,
+            BattleMetricsRCONConfiguration.RCONIP,
+            BattleMetricsRCONConfiguration.RCONPort,
+            BattleMetricsRCONConfiguration.Password
+        );
     }
 
     public override void OnModuleUnloading()
     {
         wss?.Stop();
         wss?.Dispose();
-        wss = null;
     }
 
     public override Task OnConnected()
     {
-        wss?.Start();
+        if (wss is null)
+        {
+            try
+            {
+                initializeWebSocketServer();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Failed to start RCON server: " + ex.Message);
+                Console.ResetColor();
+
+                this.Unload();
+                return Task.CompletedTask;
+            }
+        }
+
+        wss.Start();
 
         return Task.CompletedTask;
     }
 
     public override Task OnDisconnected()
     {
-        wss?.Stop();
+        wss.Stop();
 
         return Task.CompletedTask;
     }
