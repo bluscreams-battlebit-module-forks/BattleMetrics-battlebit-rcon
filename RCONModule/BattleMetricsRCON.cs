@@ -72,7 +72,21 @@ public class BattleMetricsRCON : BattleBitModule
             }
         }
 
-        wss.Start();
+        Task.Run(async () =>
+        {
+            try
+            {
+                await wss.Start();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("Failed to start RCON server: " + ex.Message);
+                Console.ResetColor();
+
+                this.Unload();
+            }
+        });
 
         return Task.CompletedTask;
     }
