@@ -22,34 +22,22 @@ public class BattleMetricsRCON : BattleBitModule
 
     public override void OnModulesLoaded()
     {
-        if (wss == null && BattleMetricsRCONConfiguration != null)
+        if (string.IsNullOrEmpty(BattleMetricsRCONConfiguration.RCONIP))
         {
-            var changedConfig = false;
-            if (BattleMetricsRCONConfiguration.RCONIP == "")
-            {
-                BattleMetricsRCONConfiguration.RCONIP = "+";
-                changedConfig = true;
-            }
+            BattleMetricsRCONConfiguration.RCONIP = "+";
+        }
 
-            if (BattleMetricsRCONConfiguration.RCONPort == 0)
-            {
-                BattleMetricsRCONConfiguration.RCONPort = Server.GamePort + 1;
-                changedConfig = true;
-            }
+        if (BattleMetricsRCONConfiguration.RCONPort == 0)
+        {
+            BattleMetricsRCONConfiguration.RCONPort = Server.GamePort + 1;
+        }
 
-            if (
-                BattleMetricsRCONConfiguration.Password == null
-                || BattleMetricsRCONConfiguration.Password == ""
-            )
-            {
-                BattleMetricsRCONConfiguration.Password = CreatePassword(32);
-                changedConfig = true;
-            }
+        if (string.IsNullOrEmpty(BattleMetricsRCONConfiguration.Password))
+        {
+            BattleMetricsRCONConfiguration.Password = CreatePassword(32);
+        }
 
-            if (changedConfig)
-            {
-                BattleMetricsRCONConfiguration.Save();
-            }
+        BattleMetricsRCONConfiguration.Save();
 
             wss = new WebSocketServer<RunnerPlayer>(
                 Server,
