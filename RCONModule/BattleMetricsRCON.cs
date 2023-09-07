@@ -45,7 +45,7 @@ public class BattleMetricsRCON : BattleBitModule
                 Server,
                 BattleMetricsRCONConfiguration.RCONIP,
                 BattleMetricsRCONConfiguration.RCONPort,
-                BattleMetricsRCONConfiguration.Password ?? CreatePassword(20)
+                BattleMetricsRCONConfiguration.Password
             );
         }
         catch (Exception ex)
