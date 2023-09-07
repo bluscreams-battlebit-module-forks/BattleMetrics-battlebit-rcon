@@ -57,8 +57,9 @@ public class BattleMetricsRCON : BattleBitModule
         }
     }
 
-    public void Dispose()
+    public override void OnModuleUnloading()
     {
+        wss?.Stop();
         wss?.Dispose();
         wss = null;
     }
