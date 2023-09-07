@@ -9,7 +9,7 @@ namespace BattleBitRCON;
 
 public class RCONConfiguration : ModuleConfiguration
 {
-    public string RCONIP { get; set; } = "0.0.0.0";
+    public string RCONIP { get; set; } = "+";
     public int RCONPort { get; set; }
     public string Password { get; set; }
 }
