@@ -80,18 +80,12 @@ public class BattleMetricsRCON : BattleBitModule
 
     public override async Task OnPlayerConnected(RunnerPlayer player)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerConnected<RunnerPlayer>(player));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerConnected<RunnerPlayer>(player));
     }
 
     public override async Task OnPlayerDisconnected(RunnerPlayer player)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerDisconnected<RunnerPlayer>(player));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerDisconnected<RunnerPlayer>(player));
     }
 
     public override async Task<bool> OnPlayerTypedMessage(
@@ -100,33 +94,25 @@ public class BattleMetricsRCON : BattleBitModule
         string msg
     )
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnPlayerTypedMessage<RunnerPlayer>(player, channel, msg)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnPlayerTypedMessage<RunnerPlayer>(player, channel, msg)
+        );
+
         return true;
     }
 
     public override async Task OnPlayerChangedRole(RunnerPlayer player, GameRole role)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnPlayerChangedRole<RunnerPlayer>(player, role)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnPlayerChangedRole<RunnerPlayer>(player, role)
+        );
     }
 
     public override async Task OnPlayerJoinedSquad(RunnerPlayer player, Squad<RunnerPlayer> squad)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnPlayerJoinedSquad<RunnerPlayer>(player, squad)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnPlayerJoinedSquad<RunnerPlayer>(player, squad)
+        );
     }
 
     public override async Task OnSquadLeaderChanged(
@@ -134,84 +120,57 @@ public class BattleMetricsRCON : BattleBitModule
         RunnerPlayer newLeader
     )
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnSquadLeaderChanged<RunnerPlayer>(squad, newLeader)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnSquadLeaderChanged<RunnerPlayer>(squad, newLeader)
+        );
     }
 
     public override async Task OnPlayerLeftSquad(RunnerPlayer player, Squad<RunnerPlayer> squad)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerLeftSquad<RunnerPlayer>(player, squad));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerLeftSquad<RunnerPlayer>(player, squad));
     }
 
     public override async Task OnPlayerChangeTeam(RunnerPlayer player, Team team)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerChangeTeam<RunnerPlayer>(player, team));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerChangeTeam<RunnerPlayer>(player, team));
     }
 
     public override async Task OnSquadPointsChanged(Squad<RunnerPlayer> squad, int newPoints)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnSquadPointsChanged<RunnerPlayer>(squad, newPoints)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnSquadPointsChanged<RunnerPlayer>(squad, newPoints)
+        );
     }
 
     public override async Task OnPlayerSpawned(RunnerPlayer player)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerSpawned<RunnerPlayer>(player));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerSpawned<RunnerPlayer>(player));
     }
 
     public override async Task OnPlayerDied(RunnerPlayer player)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerDied<RunnerPlayer>(player));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerDied<RunnerPlayer>(player));
     }
 
     public override async Task OnPlayerGivenUp(RunnerPlayer player)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnPlayerGivenUp<RunnerPlayer>(player));
-        }
+        await wss.BroadcastMessage(new Messages.OnPlayerGivenUp<RunnerPlayer>(player));
     }
 
     public override async Task OnAPlayerDownedAnotherPlayer(
         OnPlayerKillArguments<RunnerPlayer> args
     )
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnAPlayerDownedAnotherPlayer<RunnerPlayer>(args)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnAPlayerDownedAnotherPlayer<RunnerPlayer>(args)
+        );
     }
 
     public override async Task OnAPlayerRevivedAnotherPlayer(RunnerPlayer from, RunnerPlayer to)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnAPlayerRevivedAnotherPlayer<RunnerPlayer>(from, to)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnAPlayerRevivedAnotherPlayer<RunnerPlayer>(from, to)
+        );
     }
 
     public override async Task OnPlayerReported(
@@ -221,36 +180,24 @@ public class BattleMetricsRCON : BattleBitModule
         string additional
     )
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(
-                new Messages.OnPlayerReported<RunnerPlayer>(from, to, reason, additional)
-            );
-        }
+        await wss.BroadcastMessage(
+            new Messages.OnPlayerReported<RunnerPlayer>(from, to, reason, additional)
+        );
     }
 
     public override async Task OnGameStateChanged(GameState oldState, GameState newState)
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnGameStateChanged(oldState, newState));
-        }
+        await wss.BroadcastMessage(new Messages.OnGameStateChanged(oldState, newState));
     }
 
     public override async Task OnRoundStarted()
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnRoundStarted());
-        }
+        await wss.BroadcastMessage(new Messages.OnRoundStarted());
     }
 
     public override async Task OnRoundEnded()
     {
-        if (wss != null)
-        {
-            await wss.BroadcastMessage(new Messages.OnRoundEnded());
-        }
+        await wss.BroadcastMessage(new Messages.OnRoundEnded());
     }
 
     // Taken from https://stackoverflow.com/a/54997.
