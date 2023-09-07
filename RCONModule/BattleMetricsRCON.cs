@@ -16,7 +16,7 @@ public class RCONConfiguration : ModuleConfiguration
 
 public class BattleMetricsRCON : BattleBitModule
 {
-    public RCONConfiguration? BattleMetricsRCONConfiguration { get; set; }
+    public RCONConfiguration BattleMetricsRCONConfiguration { get; set; }
 
     private WebSocketServer<RunnerPlayer>? wss;
 
