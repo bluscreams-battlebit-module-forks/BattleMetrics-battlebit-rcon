@@ -67,13 +67,15 @@ public class BattleMetricsRCON : BattleBitModule
     public override Task OnConnected()
     {
         wss?.Start();
-        return base.OnConnected();
+
+        return Task.CompletedTask;
     }
 
     public override Task OnDisconnected()
     {
         wss?.Stop();
-        return base.OnDisconnected();
+
+        return Task.CompletedTask;
     }
 
     public override async Task OnPlayerConnected(RunnerPlayer player)
@@ -82,7 +84,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerConnected<RunnerPlayer>(player));
         }
-        await base.OnPlayerConnected(player);
     }
 
     public override async Task OnPlayerDisconnected(RunnerPlayer player)
@@ -91,7 +92,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerDisconnected<RunnerPlayer>(player));
         }
-        await base.OnPlayerDisconnected(player);
     }
 
     public override async Task<bool> OnPlayerTypedMessage(
@@ -106,7 +106,7 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnPlayerTypedMessage<RunnerPlayer>(player, channel, msg)
             );
         }
-        return await base.OnPlayerTypedMessage(player, channel, msg);
+        return true;
     }
 
     public override async Task OnPlayerChangedRole(RunnerPlayer player, GameRole role)
@@ -117,7 +117,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnPlayerChangedRole<RunnerPlayer>(player, role)
             );
         }
-        await base.OnPlayerChangedRole(player, role);
     }
 
     public override async Task OnPlayerJoinedSquad(RunnerPlayer player, Squad<RunnerPlayer> squad)
@@ -128,7 +127,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnPlayerJoinedSquad<RunnerPlayer>(player, squad)
             );
         }
-        await base.OnPlayerJoinedSquad(player, squad);
     }
 
     public override async Task OnSquadLeaderChanged(
@@ -142,7 +140,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnSquadLeaderChanged<RunnerPlayer>(squad, newLeader)
             );
         }
-        await base.OnSquadLeaderChanged(squad, newLeader);
     }
 
     public override async Task OnPlayerLeftSquad(RunnerPlayer player, Squad<RunnerPlayer> squad)
@@ -151,7 +148,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerLeftSquad<RunnerPlayer>(player, squad));
         }
-        await base.OnPlayerLeftSquad(player, squad);
     }
 
     public override async Task OnPlayerChangeTeam(RunnerPlayer player, Team team)
@@ -160,7 +156,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerChangeTeam<RunnerPlayer>(player, team));
         }
-        await base.OnPlayerChangeTeam(player, team);
     }
 
     public override async Task OnSquadPointsChanged(Squad<RunnerPlayer> squad, int newPoints)
@@ -171,7 +166,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnSquadPointsChanged<RunnerPlayer>(squad, newPoints)
             );
         }
-        await base.OnSquadPointsChanged(squad, newPoints);
     }
 
     public override async Task OnPlayerSpawned(RunnerPlayer player)
@@ -180,7 +174,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerSpawned<RunnerPlayer>(player));
         }
-        await base.OnPlayerSpawned(player);
     }
 
     public override async Task OnPlayerDied(RunnerPlayer player)
@@ -189,7 +182,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerDied<RunnerPlayer>(player));
         }
-        await base.OnPlayerDied(player);
     }
 
     public override async Task OnPlayerGivenUp(RunnerPlayer player)
@@ -198,7 +190,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnPlayerGivenUp<RunnerPlayer>(player));
         }
-        await base.OnPlayerGivenUp(player);
     }
 
     public override async Task OnAPlayerDownedAnotherPlayer(
@@ -211,7 +202,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnAPlayerDownedAnotherPlayer<RunnerPlayer>(args)
             );
         }
-        await base.OnAPlayerDownedAnotherPlayer(args);
     }
 
     public override async Task OnAPlayerRevivedAnotherPlayer(RunnerPlayer from, RunnerPlayer to)
@@ -222,7 +212,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnAPlayerRevivedAnotherPlayer<RunnerPlayer>(from, to)
             );
         }
-        await base.OnAPlayerRevivedAnotherPlayer(from, to);
     }
 
     public override async Task OnPlayerReported(
@@ -238,7 +227,6 @@ public class BattleMetricsRCON : BattleBitModule
                 new Messages.OnPlayerReported<RunnerPlayer>(from, to, reason, additional)
             );
         }
-        await base.OnPlayerReported(from, to, reason, additional);
     }
 
     public override async Task OnGameStateChanged(GameState oldState, GameState newState)
@@ -247,7 +235,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnGameStateChanged(oldState, newState));
         }
-        await base.OnGameStateChanged(oldState, newState);
     }
 
     public override async Task OnRoundStarted()
@@ -256,7 +243,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnRoundStarted());
         }
-        await base.OnRoundStarted();
     }
 
     public override async Task OnRoundEnded()
@@ -265,7 +251,6 @@ public class BattleMetricsRCON : BattleBitModule
         {
             await wss.BroadcastMessage(new Messages.OnRoundEnded());
         }
-        await base.OnRoundEnded();
     }
 
     // Taken from https://stackoverflow.com/a/54997.
