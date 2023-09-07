@@ -39,12 +39,21 @@ public class BattleMetricsRCON : BattleBitModule
 
         BattleMetricsRCONConfiguration.Save();
 
+        try
+        {
             wss = new WebSocketServer<RunnerPlayer>(
                 Server,
                 BattleMetricsRCONConfiguration.RCONIP,
                 BattleMetricsRCONConfiguration.RCONPort,
                 BattleMetricsRCONConfiguration.Password ?? CreatePassword(20)
             );
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Failed to start RCON server: " + ex.Message);
+            Console.ResetColor();
+            this.Unload();
         }
     }
 
