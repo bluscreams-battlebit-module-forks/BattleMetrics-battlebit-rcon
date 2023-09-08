@@ -76,7 +76,7 @@ namespace BattleBitRCON
             }
         }
 
-        public async void Start()
+        public async Task Start()
         {
             listener = new HttpListener();
             var prefix = $"http://{listenIP}:{listenPort}/";
