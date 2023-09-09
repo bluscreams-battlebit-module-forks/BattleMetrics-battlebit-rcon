@@ -271,7 +271,7 @@ namespace BattleBitRCON
 
         public async Task BroadcastMessage(object msg)
         {
-            await Task.WhenAny(
+            await Task.WhenAll(
                 clients
                     .ToList()
                     .Where(ws => ws.State == WebSocketState.Open)
