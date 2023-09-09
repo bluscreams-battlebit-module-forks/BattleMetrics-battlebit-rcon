@@ -276,6 +276,7 @@ namespace BattleBitRCON
                     .ToList()
                     .Where(ws => ws.State == WebSocketState.Open)
                     .Select(ws => SendMessage(ws, msg))
+                    .Union(new[] { Task.CompletedTask })
             );
         }
     }
