@@ -20,6 +20,9 @@ namespace BattleBitRCON
         private HttpListener? listener = null;
 
         private HashSet<WebSocket> clients = new HashSet<WebSocket>();
+        private Dictionary<WebSocket, Queue<object>> pendingMessages =
+            new Dictionary<WebSocket, Queue<object>>();
+        private Dictionary<WebSocket, bool> sendingMessages = new Dictionary<WebSocket, bool>();
 
         // Map all lowercase command name => namespace
         private Dictionary<string, Type> commandNames;
@@ -185,6 +188,8 @@ namespace BattleBitRCON
                 {
                     webSocket.Dispose();
                     clients.Remove(webSocket);
+                    pendingMessages.Remove(webSocket);
+                    sendingMessages.Remove(webSocket);
                 }
             }
         }
@@ -259,14 +264,53 @@ namespace BattleBitRCON
             }
         }
 
+        private async Task processPendingMessages(WebSocket ws)
+        {
+            if (sendingMessages.GetValueOrDefault(ws, false) == true)
+            {
+                return;
+            }
+
+            sendingMessages[ws] = true;
+            try
+            {
+                var list = pendingMessages.GetValueOrDefault(ws, new Queue<object>());
+
+                while (list.Count > 0 && ws.State == WebSocketState.Open)
+                {
+                    var msg = list.Dequeue();
+
+                    await ws.SendAsync(
+                        JsonSerializer.SerializeToUtf8Bytes(
+                            msg,
+                            msg.GetType(),
+                            jsonSerializationOptions
+                        ),
+                        WebSocketMessageType.Text,
+                        true,
+                        CancellationToken.None
+                    );
+                }
+            }
+            catch
+            {
+                // Suppress errors sending messages. There is nothing for the user
+                // to do and it shouldn't matter.
+            }
+            finally
+            {
+                sendingMessages[ws] = false;
+            }
+        }
+
         public async Task SendMessage(WebSocket ws, object msg)
         {
-            await ws.SendAsync(
-                JsonSerializer.SerializeToUtf8Bytes(msg, msg.GetType(), jsonSerializationOptions),
-                WebSocketMessageType.Text,
-                true,
-                CancellationToken.None
-            );
+            var list = pendingMessages.GetValueOrDefault(ws, new Queue<object>());
+            list.Enqueue(msg);
+
+            pendingMessages[ws] = list;
+
+            await processPendingMessages(ws);
         }
 
         public async Task BroadcastMessage(object msg)
