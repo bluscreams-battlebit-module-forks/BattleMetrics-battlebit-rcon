@@ -252,15 +252,7 @@ namespace BattleBitRCON
             }
             catch (Commands.InvalidCommand e)
             {
-                await ws.SendAsync(
-                    JsonSerializer.SerializeToUtf8Bytes(
-                        new { type = Commands.InvalidCommand.Type, message = e.Message, },
-                        jsonSerializationOptions
-                    ),
-                    WebSocketMessageType.Text,
-                    true,
-                    CancellationToken.None
-                );
+                await SendMessage(ws, e);
             }
         }
 
