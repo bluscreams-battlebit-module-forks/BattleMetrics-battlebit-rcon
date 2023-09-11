@@ -105,7 +105,7 @@ namespace BattleBitRCON
                     && listenerContext.Request.Headers.Get("x-password") == password
                 )
                 {
-                    ProcessRequest(listenerContext);
+                    _ = ProcessRequest(listenerContext);
                 }
                 else
                 {
@@ -124,7 +124,7 @@ namespace BattleBitRCON
             }
         }
 
-        private async void ProcessRequest(HttpListenerContext listenerContext)
+        private async Task ProcessRequest(HttpListenerContext listenerContext)
         {
             WebSocketContext? webSocketContext;
             try
