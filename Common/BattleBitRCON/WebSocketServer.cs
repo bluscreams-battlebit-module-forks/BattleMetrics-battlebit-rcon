@@ -73,10 +73,7 @@ namespace BattleBitRCON
 
         public void Dispose()
         {
-            if (listener != null)
-            {
-                listener.Stop();
-            }
+            Stop();
         }
 
         public async Task Start()
@@ -86,7 +83,7 @@ namespace BattleBitRCON
             listener.Prefixes.Add(prefix);
 
             listener.Start();
-            Console.WriteLine($"Listening on {listenIP}:{listenPort}");
+            Console.WriteLine($"RCON Server started: {listenIP}:{listenPort}");
 
             while (listener.IsListening)
             {
@@ -119,6 +116,7 @@ namespace BattleBitRCON
         {
             if (listener != null)
             {
+                Console.WriteLine($"RCON Server stopped: {listenIP}:{listenPort}");
                 listener.Stop();
                 listener = null;
             }
