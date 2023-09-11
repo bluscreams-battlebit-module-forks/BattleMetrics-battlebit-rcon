@@ -174,10 +174,22 @@ namespace BattleBitRCON
                     }
                 }
             }
-            catch (Exception e)
+            catch (WebSocketException e)
+                when (e.InnerException is HttpListenerException exception
+                    && exception.ErrorCode == 995
+                )
             {
-                // Just log any exceptions to the console. Pretty much any exception that occurs when calling `SendAsync`/`ReceiveAsync`/`CloseAsync` is unrecoverable in that it will abort the connection and leave the `WebSocket` instance in an unusable state.
-                Console.WriteLine("Exception: {0}", e);
+                // The HTTP server was shutdown.
+                // We'll cleanup below and can ignore this error.
+            }
+            catch (WebSocketException)
+            {
+                // Unrecoverable error. Log for monitoring purposes, but client should just open a
+                // new connection.
+                Console.WriteLine(
+                    "RCON connection error. Closing connection for: {0}",
+                    listenerContext.Request.RemoteEndPoint.Address.ToString()
+                );
             }
             finally
             {
