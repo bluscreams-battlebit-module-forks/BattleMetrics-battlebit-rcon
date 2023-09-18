@@ -1,5 +1,6 @@
 using BattleBitAPI;
 using BattleBitAPI.Server;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Net;
 using System.Net.WebSockets;
@@ -20,9 +21,10 @@ namespace BattleBitRCON
         private HttpListener? listener = null;
 
         private HashSet<WebSocket> clients = new HashSet<WebSocket>();
-        private Dictionary<WebSocket, Queue<object>> pendingMessages =
-            new Dictionary<WebSocket, Queue<object>>();
-        private Dictionary<WebSocket, bool> sendingMessages = new Dictionary<WebSocket, bool>();
+        private ConcurrentDictionary<WebSocket, ConcurrentQueue<object>> pendingMessages =
+            new ConcurrentDictionary<WebSocket, ConcurrentQueue<object>>();
+        private ConcurrentDictionary<WebSocket, bool> sendingMessages =
+            new ConcurrentDictionary<WebSocket, bool>();
 
         // Map all lowercase command name => namespace
         private Dictionary<string, Type> commandNames;
@@ -198,8 +200,9 @@ namespace BattleBitRCON
                 {
                     webSocket.Dispose();
                     clients.Remove(webSocket);
-                    pendingMessages.Remove(webSocket);
-                    sendingMessages.Remove(webSocket);
+
+                    pendingMessages.TryRemove(webSocket, out _);
+                    sendingMessages.TryRemove(webSocket, out _);
                 }
             }
         }
@@ -276,22 +279,24 @@ namespace BattleBitRCON
             sendingMessages[ws] = true;
             try
             {
-                var list = pendingMessages.GetValueOrDefault(ws, new Queue<object>());
+                var list = pendingMessages.GetValueOrDefault(ws, new ConcurrentQueue<object>());
 
                 while (list.Count > 0 && ws.State == WebSocketState.Open)
                 {
-                    var msg = list.Dequeue();
-
-                    await ws.SendAsync(
-                        JsonSerializer.SerializeToUtf8Bytes(
-                            msg,
-                            msg.GetType(),
-                            jsonSerializationOptions
-                        ),
-                        WebSocketMessageType.Text,
-                        true,
-                        CancellationToken.None
-                    );
+                    object? msg;
+                    if (list.TryDequeue(out msg))
+                    {
+                        await ws.SendAsync(
+                            JsonSerializer.SerializeToUtf8Bytes(
+                                msg,
+                                msg.GetType(),
+                                jsonSerializationOptions
+                            ),
+                            WebSocketMessageType.Text,
+                            true,
+                            CancellationToken.None
+                        );
+                    }
                 }
             }
             catch
@@ -307,10 +312,8 @@ namespace BattleBitRCON
 
         public async Task SendMessage(WebSocket ws, object msg)
         {
-            var list = pendingMessages.GetValueOrDefault(ws, new Queue<object>());
+            var list = pendingMessages.GetOrAdd(ws, new ConcurrentQueue<object>());
             list.Enqueue(msg);
-
-            pendingMessages[ws] = list;
 
             await processPendingMessages(ws);
         }
