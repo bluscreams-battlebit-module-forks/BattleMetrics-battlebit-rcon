@@ -7,6 +7,8 @@ using System;
 
 namespace BattleBitRCON;
 
+[Module("This implements a WebSocket based protocol for the BattleBit Community API to allow for a BattleMetrics RCON connection.", "1.1.3")]
+
 public class RCONConfiguration : ModuleConfiguration
 {
     public string RCONIP { get; set; } = "+";
