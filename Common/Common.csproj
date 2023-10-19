@@ -10,5 +10,4 @@
   <ItemGroup>
     <PackageReference Include="CommunityServerAPI" Version="1.0.7.1" />
   </ItemGroup>
-
 </Project>
