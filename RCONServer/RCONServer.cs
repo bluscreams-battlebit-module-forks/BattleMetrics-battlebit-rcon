@@ -7,6 +7,7 @@ using System.IO;
 using System.Threading.Tasks;
 
 namespace BattleBitRCON {
+
     public class RCONServer<TPlayer> : GameServer<TPlayer>, IDisposable
         where TPlayer : Player<TPlayer> {
         private WebSocketServer<TPlayer> wss;

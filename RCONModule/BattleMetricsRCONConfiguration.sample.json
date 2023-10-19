@@ -1,5 +1,5 @@
 {
-  "RCONIP": "+",
-  "RCONPort": 8000,
-  "Password": "password"
+	"RCONIP": "+",
+	"RCONPort": 8000,
+	"Password": "password"
 }

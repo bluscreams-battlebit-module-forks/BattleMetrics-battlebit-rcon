@@ -9,13 +9,15 @@ using System.Numerics;
 using System.Text.Json;
 
 namespace BattleBitRCON.Commands {
-    class CommandType {
+
+    internal class CommandType {
         public string? Command { get; set; }
 
         public uint? Identifier { get; set; }
     }
 
-    abstract class BaseCommand {
+    internal abstract class BaseCommand {
+
         public static readonly JsonSerializerOptions JsonSerializationOptions =
             new JsonSerializerOptions {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -33,7 +35,7 @@ namespace BattleBitRCON.Commands {
         public uint? Identifier { get; set; }
     }
 
-    class InvalidCommand : Exception {
+    internal class InvalidCommand : Exception {
         public const string Type = "error";
 
         public new string Message;
@@ -44,8 +46,10 @@ namespace BattleBitRCON.Commands {
     }
 
     namespace Ping {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -55,7 +59,7 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand {
+        internal class Response : BaseCommand {
             public string Message { get; set; } = "pong";
             public DateTime Timestamp { get; set; }
 
@@ -66,8 +70,10 @@ namespace BattleBitRCON.Commands {
     }
 
     namespace PlayerList {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -80,7 +86,7 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response<TPlayer> : Request<TPlayer>
+        internal class Response<TPlayer> : Request<TPlayer>
             where TPlayer : Player<TPlayer> {
             public List<PlayerInfo> Players { get; set; }
 
@@ -95,8 +101,10 @@ namespace BattleBitRCON.Commands {
     }
 
     namespace State {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -119,7 +127,7 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response<TPlayer> : Request<TPlayer>
+        internal class Response<TPlayer> : Request<TPlayer>
             where TPlayer : Player<TPlayer> {
             public string ServerName { get; set; }
             public string MapName { get; set; }
@@ -154,8 +162,10 @@ namespace BattleBitRCON.Commands {
     }
 
     namespace Kick {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -175,12 +185,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace MessagePlayer {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -206,12 +218,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetNewPassword {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -229,12 +243,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetPingLimit {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -251,12 +267,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace AnnounceShort {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -273,12 +291,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace AnnounceLong {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -295,12 +315,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace UILogOnServer {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -319,12 +341,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace ForceStartGame {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -335,12 +359,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace ForceEndGame {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -351,12 +377,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SayToAllChat {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -373,12 +401,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SayToChat {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -398,12 +428,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetLoadingScreenText {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -420,12 +452,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetRulesScreenText {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -442,12 +476,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace StopServer {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -457,15 +493,18 @@ namespace BattleBitRCON.Commands {
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request() { }
+            public Request() {
+            }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace CloseServer {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -475,15 +514,18 @@ namespace BattleBitRCON.Commands {
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request() { }
+            public Request() {
+            }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace KickAllPlayers {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -493,15 +535,18 @@ namespace BattleBitRCON.Commands {
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request() { }
+            public Request() {
+            }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace Kill {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -518,12 +563,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace ChangeTeam {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -542,12 +589,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace KickFromSquad {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -564,12 +613,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace JoinSquad {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -588,12 +639,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace DisbandPlayerSquad {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -610,12 +663,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace PromoteSquadLeader {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -632,12 +687,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace Teleport {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -667,12 +724,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace WarnPlayer {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -691,12 +750,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetRoleTo {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -718,12 +779,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetHP {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -742,12 +805,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace GiveDamage {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -766,12 +831,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace Heal {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -790,12 +857,14 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 
     namespace SetSquadPointsOf {
-        class Request<TPlayer> : BaseCommand
+
+        internal class Request<TPlayer> : BaseCommand
             where TPlayer : Player<TPlayer> {
+
             public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
@@ -816,6 +885,6 @@ namespace BattleBitRCON.Commands {
             }
         }
 
-        class Response : BaseCommand { }
+        internal class Response : BaseCommand { }
     }
 }

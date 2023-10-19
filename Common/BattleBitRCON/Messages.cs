@@ -4,6 +4,7 @@ using BattleBitAPI.Server;
 using BattleBitRCON.Common;
 
 namespace BattleBitRCON.Messages {
+
     public class OnPlayerConnected<TPlayer>
         where TPlayer : Player<TPlayer> {
         public string Type { get; } = "OnPlayerConnected";

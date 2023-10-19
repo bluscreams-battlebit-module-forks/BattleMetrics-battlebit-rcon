@@ -13,9 +13,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace BattleBitRCON {
+
     public class WebSocketServer<TPlayer> : IDisposable
         where TPlayer : Player<TPlayer> {
-        static readonly JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions {
+
+        private static readonly JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             IgnoreReadOnlyFields = false,
         };
@@ -23,8 +25,10 @@ namespace BattleBitRCON {
         private HttpListener? listener = null;
 
         private HashSet<WebSocket> clients = new HashSet<WebSocket>();
+
         private ConcurrentDictionary<WebSocket, ConcurrentQueue<object>> pendingMessages =
             new ConcurrentDictionary<WebSocket, ConcurrentQueue<object>>();
+
         private ConcurrentDictionary<WebSocket, bool> sendingMessages =
             new ConcurrentDictionary<WebSocket, bool>();
 

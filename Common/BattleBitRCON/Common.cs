@@ -2,6 +2,7 @@ using BattleBitAPI;
 using BattleBitAPI.Common;
 
 namespace BattleBitRCON.Common {
+
     public class PlayerInfo {
         public bool InVehicle { get; set; }
         public string Name { get; set; }
