@@ -1,35 +1,29 @@
+using BattleBitAPI;
+using BattleBitAPI.Common;
+using BattleBitAPI.Server;
+using BattleBitRCON.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.Json;
-using BattleBitAPI;
-using BattleBitAPI.Common;
-using BattleBitAPI.Server;
-using BattleBitRCON.Common;
 
-namespace BattleBitRCON.Commands
-{
-    class CommandType
-    {
+namespace BattleBitRCON.Commands {
+    class CommandType {
         public string? Command { get; set; }
 
         public uint? Identifier { get; set; }
     }
 
-    abstract class BaseCommand
-    {
+    abstract class BaseCommand {
         public static readonly JsonSerializerOptions JsonSerializationOptions =
-            new JsonSerializerOptions
-            {
+            new JsonSerializerOptions {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 IgnoreReadOnlyFields = false,
             };
 
-        public string? Command
-        {
-            get
-            {
+        public string? Command {
+            get {
                 return JsonNamingPolicy.CamelCase.ConvertName(
                     (GetType().Namespace ?? "").Split(".").Last()
                 );
@@ -39,97 +33,78 @@ namespace BattleBitRCON.Commands
         public uint? Identifier { get; set; }
     }
 
-    class InvalidCommand : Exception
-    {
+    class InvalidCommand : Exception {
         public const string Type = "error";
 
         public new string Message;
 
-        public InvalidCommand(string? type)
-        {
+        public InvalidCommand(string? type) {
             Message = $"Invalid command: {type}";
         }
     }
 
-    namespace Ping
-    {
+    namespace Ping {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 return new Response(DateTime.Now) { Identifier = cmd.Identifier };
             }
         }
 
-        class Response : BaseCommand
-        {
+        class Response : BaseCommand {
             public string Message { get; set; } = "pong";
             public DateTime Timestamp { get; set; }
 
-            public Response(DateTime timestamp)
-            {
+            public Response(DateTime timestamp) {
                 Timestamp = timestamp;
             }
         }
     }
 
-    namespace PlayerList
-    {
+    namespace PlayerList {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public static Response<TPlayer> Execute(
                 GameServer<TPlayer> gameServer,
                 Request<TPlayer> cmd
-            )
-            {
+            ) {
                 return new Response<TPlayer>(gameServer.AllPlayers) { Identifier = cmd.Identifier };
             }
         }
 
         class Response<TPlayer> : Request<TPlayer>
-            where TPlayer : Player<TPlayer>
-        {
+            where TPlayer : Player<TPlayer> {
             public List<PlayerInfo> Players { get; set; }
 
-            public Response(IEnumerable<Player<TPlayer>> players)
-            {
+            public Response(IEnumerable<Player<TPlayer>> players) {
                 Players = new List<PlayerInfo>();
 
-                foreach (var player in players)
-                {
+                foreach (var player in players) {
                     Players.Add(PlayerInfo.GetInfo(player));
                 }
             }
         }
     }
 
-    namespace State
-    {
+    namespace State {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public static Response<TPlayer> Execute(
                 GameServer<TPlayer> gameServer,
                 Request<TPlayer> cmd
-            )
-            {
+            ) {
                 return new Response<TPlayer>(
                     gameServer.ServerName,
                     gameServer.Map,
@@ -138,16 +113,14 @@ namespace BattleBitRCON.Commands
                     gameServer.DayNight,
                     gameServer.MaxPlayerCount,
                     gameServer.AllPlayers
-                )
-                {
+                ) {
                     Identifier = cmd.Identifier
                 };
             }
         }
 
         class Response<TPlayer> : Request<TPlayer>
-            where TPlayer : Player<TPlayer>
-        {
+            where TPlayer : Player<TPlayer> {
             public string ServerName { get; set; }
             public string MapName { get; set; }
             public MapSize MapSize { get; set; }
@@ -164,8 +137,7 @@ namespace BattleBitRCON.Commands
                 MapDayNight dayNight,
                 int maxPlayers,
                 IEnumerable<Player<TPlayer>> players
-            )
-            {
+            ) {
                 ServerName = serverName;
                 MapName = mapName;
                 GameMode = gameMode;
@@ -174,36 +146,30 @@ namespace BattleBitRCON.Commands
                 MaxPlayers = maxPlayers;
                 Players = new List<PlayerInfo>();
 
-                foreach (var player in players)
-                {
+                foreach (var player in players) {
                     Players.Add(PlayerInfo.GetInfo(player));
                 }
             }
         }
     }
 
-    namespace Kick
-    {
+    namespace Kick {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public string Reason { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.Kick(Convert.ToUInt64(cmd.SteamID), cmd.Reason);
 
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string SteamID, string Reason)
-            {
+            public Request(string SteamID, string Reason) {
                 this.SteamID = SteamID;
                 this.Reason = Reason;
             }
@@ -212,13 +178,10 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace MessagePlayer
-    {
+    namespace MessagePlayer {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
@@ -226,8 +189,7 @@ namespace BattleBitRCON.Commands
             public string Message { get; set; }
             public float FadeOutTime { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.MessageToPlayer(
                     Convert.ToUInt64(cmd.SteamID),
                     cmd.Message,
@@ -237,8 +199,7 @@ namespace BattleBitRCON.Commands
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string SteamID, string Message, float FadeOutTime)
-            {
+            public Request(string SteamID, string Message, float FadeOutTime) {
                 this.SteamID = SteamID;
                 this.Message = Message;
                 this.FadeOutTime = FadeOutTime;
@@ -248,27 +209,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetNewPassword
-    {
+    namespace SetNewPassword {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string NewPassword { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetNewPassword(cmd.NewPassword);
 
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string newPassword)
-            {
+            public Request(string newPassword) {
                 NewPassword = newPassword;
             }
         }
@@ -276,26 +232,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetPingLimit
-    {
+    namespace SetPingLimit {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public int NewPing { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetPingLimit(cmd.NewPing);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(int newPing)
-            {
+            public Request(int newPing) {
                 NewPing = newPing;
             }
         }
@@ -303,26 +254,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace AnnounceShort
-    {
+    namespace AnnounceShort {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string Message { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.AnnounceShort(cmd.Message);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message)
-            {
+            public Request(string message) {
                 Message = message;
             }
         }
@@ -330,26 +276,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace AnnounceLong
-    {
+    namespace AnnounceLong {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string Message { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.AnnounceLong(cmd.Message);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message)
-            {
+            public Request(string message) {
                 Message = message;
             }
         }
@@ -357,27 +298,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace UILogOnServer
-    {
+    namespace UILogOnServer {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string Message { get; set; }
             public float MessageLifetime { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.UILogOnServer(cmd.Message, cmd.MessageLifetime);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message, float messageLifetime)
-            {
+            public Request(string message, float messageLifetime) {
                 Message = message;
                 MessageLifetime = messageLifetime;
             }
@@ -386,18 +322,14 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace ForceStartGame
-    {
+    namespace ForceStartGame {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.ForceStartGame();
                 return new Response { Identifier = cmd.Identifier };
             }
@@ -406,18 +338,14 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace ForceEndGame
-    {
+    namespace ForceEndGame {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.ForceEndGame();
                 return new Response { Identifier = cmd.Identifier };
             }
@@ -426,26 +354,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SayToAllChat
-    {
+    namespace SayToAllChat {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string Message { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SayToAllChat(cmd.Message);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message)
-            {
+            public Request(string message) {
                 Message = message;
             }
         }
@@ -453,13 +376,10 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SayToChat
-    {
+    namespace SayToChat {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
@@ -467,14 +387,12 @@ namespace BattleBitRCON.Commands
 
             public string SteamID { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SayToChat(cmd.Message, Convert.ToUInt64(cmd.SteamID));
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message, string steamID)
-            {
+            public Request(string message, string steamID) {
                 Message = message;
                 SteamID = steamID;
             }
@@ -483,26 +401,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetLoadingScreenText
-    {
+    namespace SetLoadingScreenText {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string Message { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetLoadingScreenText(cmd.Message);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message)
-            {
+            public Request(string message) {
                 Message = message;
             }
         }
@@ -510,26 +423,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetRulesScreenText
-    {
+    namespace SetRulesScreenText {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string Message { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetRulesScreenText(cmd.Message);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string message)
-            {
+            public Request(string message) {
                 Message = message;
             }
         }
@@ -537,18 +445,14 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace StopServer
-    {
+    namespace StopServer {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.StopServer();
                 return new Response { Identifier = cmd.Identifier };
             }
@@ -559,18 +463,14 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace CloseServer
-    {
+    namespace CloseServer {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.CloseServer();
                 return new Response { Identifier = cmd.Identifier };
             }
@@ -581,18 +481,14 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace KickAllPlayers
-    {
+    namespace KickAllPlayers {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.KickAllPlayers();
                 return new Response { Identifier = cmd.Identifier };
             }
@@ -603,26 +499,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace Kill
-    {
+    namespace Kill {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.Kill(Convert.ToUInt64(cmd.SteamID));
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID)
-            {
+            public Request(string steamID) {
                 SteamID = steamID;
             }
         }
@@ -630,27 +521,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace ChangeTeam
-    {
+    namespace ChangeTeam {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public int Team { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.ChangeTeam(Convert.ToUInt64(cmd.SteamID), (Team)cmd.Team);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, int team)
-            {
+            public Request(string steamID, int team) {
                 SteamID = steamID;
                 Team = team;
             }
@@ -659,26 +545,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace KickFromSquad
-    {
+    namespace KickFromSquad {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.KickFromSquad(Convert.ToUInt64(cmd.SteamID));
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID)
-            {
+            public Request(string steamID) {
                 SteamID = steamID;
             }
         }
@@ -686,27 +567,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace JoinSquad
-    {
+    namespace JoinSquad {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public int TargetSquad { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.JoinSquad(Convert.ToUInt64(cmd.SteamID), (Squads)cmd.TargetSquad);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, int targetSquad)
-            {
+            public Request(string steamID, int targetSquad) {
                 SteamID = steamID;
                 TargetSquad = targetSquad;
             }
@@ -715,26 +591,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace DisbandPlayerSquad
-    {
+    namespace DisbandPlayerSquad {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.DisbandPlayerSquad(Convert.ToUInt64(cmd.SteamID));
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID)
-            {
+            public Request(string steamID) {
                 SteamID = steamID;
             }
         }
@@ -742,26 +613,21 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace PromoteSquadLeader
-    {
+    namespace PromoteSquadLeader {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.PromoteSquadLeader(Convert.ToUInt64(cmd.SteamID));
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID)
-            {
+            public Request(string steamID) {
                 SteamID = steamID;
             }
         }
@@ -769,13 +635,10 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace Teleport
-    {
+    namespace Teleport {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
@@ -784,12 +647,10 @@ namespace BattleBitRCON.Commands
             public float Y { get; set; }
             public float Z { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.Teleport(
                     Convert.ToUInt64(cmd.SteamID),
-                    new Vector3
-                    {
+                    new Vector3 {
                         X = cmd.X,
                         Y = cmd.Y,
                         Z = cmd.Z,
@@ -798,8 +659,7 @@ namespace BattleBitRCON.Commands
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, float x, float y, float z)
-            {
+            public Request(string steamID, float x, float y, float z) {
                 SteamID = steamID;
                 X = x;
                 Y = y;
@@ -810,27 +670,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace WarnPlayer
-    {
+    namespace WarnPlayer {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public string Message { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.WarnPlayer(Convert.ToUInt64(cmd.SteamID), cmd.Message);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, string message)
-            {
+            public Request(string steamID, string message) {
                 SteamID = steamID;
                 Message = message;
             }
@@ -839,21 +694,17 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetRoleTo
-    {
+    namespace SetRoleTo {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public string Role { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetRoleTo(
                     Convert.ToUInt64(cmd.SteamID),
                     (GameRole)Enum.Parse(typeof(GameRole), cmd.Role)
@@ -861,8 +712,7 @@ namespace BattleBitRCON.Commands
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, string role)
-            {
+            public Request(string steamID, string role) {
                 SteamID = steamID;
                 Role = role;
             }
@@ -871,27 +721,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetHP
-    {
+    namespace SetHP {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public float HP { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetHP(Convert.ToUInt64(cmd.SteamID), cmd.HP);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, float hp)
-            {
+            public Request(string steamID, float hp) {
                 SteamID = steamID;
                 HP = hp;
             }
@@ -900,27 +745,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace GiveDamage
-    {
+    namespace GiveDamage {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public float Damage { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.GiveDamage(Convert.ToUInt64(cmd.SteamID), cmd.Damage);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, float damage)
-            {
+            public Request(string steamID, float damage) {
                 SteamID = steamID;
                 Damage = damage;
             }
@@ -929,27 +769,22 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace Heal
-    {
+    namespace Heal {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
             public string SteamID { get; set; }
             public float Heal { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.Heal(Convert.ToUInt64(cmd.SteamID), cmd.Heal);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(string steamID, float heal)
-            {
+            public Request(string steamID, float heal) {
                 SteamID = steamID;
                 Heal = heal;
             }
@@ -958,13 +793,10 @@ namespace BattleBitRCON.Commands
         class Response : BaseCommand { }
     }
 
-    namespace SetSquadPointsOf
-    {
+    namespace SetSquadPointsOf {
         class Request<TPlayer> : BaseCommand
-            where TPlayer : Player<TPlayer>
-        {
-            public static Request<TPlayer>? Parse(ArraySegment<byte> json)
-            {
+            where TPlayer : Player<TPlayer> {
+            public static Request<TPlayer>? Parse(ArraySegment<byte> json) {
                 return JsonSerializer.Deserialize<Request<TPlayer>>(json, JsonSerializationOptions);
             }
 
@@ -972,14 +804,12 @@ namespace BattleBitRCON.Commands
             public int Squad { get; set; }
             public int Points { get; set; }
 
-            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd)
-            {
+            public static Response Execute(GameServer<TPlayer> gameServer, Request<TPlayer> cmd) {
                 gameServer.SetSquadPointsOf((Team)cmd.Team, (Squads)cmd.Squad, cmd.Points);
                 return new Response { Identifier = cmd.Identifier };
             }
 
-            public Request(int team, int squad, int points)
-            {
+            public Request(int team, int squad, int points) {
                 Team = team;
                 Squad = squad;
                 Points = points;

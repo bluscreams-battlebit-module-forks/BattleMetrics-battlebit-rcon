@@ -1,10 +1,8 @@
 using BattleBitAPI;
 using BattleBitAPI.Common;
 
-namespace BattleBitRCON.Common
-{
-    public class PlayerInfo
-    {
+namespace BattleBitRCON.Common {
+    public class PlayerInfo {
         public bool InVehicle { get; set; }
         public string Name { get; set; }
         public string IP { get; set; }
@@ -20,12 +18,10 @@ namespace BattleBitRCON.Common
         public float HP { get; set; }
 
         public static PlayerInfo GetInfo<TPlayer>(Player<TPlayer> player)
-            where TPlayer : Player<TPlayer>
-        {
+            where TPlayer : Player<TPlayer> {
             var pos = new float[3] { player.Position.X, player.Position.Y, player.Position.Z };
 
-            return new PlayerInfo
-            {
+            return new PlayerInfo {
                 InVehicle = player.InVehicle,
                 Name = player.Name,
                 IP = player.IP.ToString(),

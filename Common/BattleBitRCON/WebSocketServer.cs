@@ -12,13 +12,10 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BattleBitRCON
-{
+namespace BattleBitRCON {
     public class WebSocketServer<TPlayer> : IDisposable
-        where TPlayer : Player<TPlayer>
-    {
-        static readonly JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions
-        {
+        where TPlayer : Player<TPlayer> {
+        static readonly JsonSerializerOptions jsonSerializationOptions = new JsonSerializerOptions {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             IgnoreReadOnlyFields = false,
         };
@@ -45,8 +42,7 @@ namespace BattleBitRCON
             string listenIP,
             int listenPort,
             string password
-        )
-        {
+        ) {
             this.gameServer = gameServer;
 
             // Find all BattleBitRCON.Commands.*.Request classes
@@ -63,12 +59,10 @@ namespace BattleBitRCON
 
             commandNames = new Dictionary<string, Type>();
 
-            foreach (var cmd in commandNamespaces)
-            {
+            foreach (var cmd in commandNamespaces) {
                 // Getting command name from namespace
                 var name = cmd.Namespace?.Split(".").Last().ToLower();
-                if (name != null)
-                {
+                if (name != null) {
                     commandNames.TryAdd(name, cmd);
                 }
             }
@@ -78,13 +72,11 @@ namespace BattleBitRCON
             this.password = password;
         }
 
-        public void Dispose()
-        {
+        public void Dispose() {
             Stop();
         }
 
-        public async Task Start()
-        {
+        public async Task Start() {
             listener = new HttpListener();
             var prefix = $"http://{listenIP}:{listenPort}/";
             listener.Prefixes.Add(prefix);
@@ -92,52 +84,39 @@ namespace BattleBitRCON
             listener.Start();
             Console.WriteLine($"RCON Server started: {listenIP}:{listenPort}");
 
-            while (listener.IsListening)
-            {
+            while (listener.IsListening) {
                 HttpListenerContext listenerContext;
-                try
-                {
+                try {
                     listenerContext = await listener.GetContextAsync();
-                }
-                catch
-                {
+                } catch {
                     break;
                 }
 
                 if (
                     listenerContext.Request.IsWebSocketRequest
                     && listenerContext.Request.Headers.Get("x-password") == password
-                )
-                {
+                ) {
                     _ = ProcessRequest(listenerContext);
-                }
-                else
-                {
+                } else {
                     listenerContext.Response.StatusCode = 401;
                     listenerContext.Response.Close();
                 }
             }
         }
 
-        public void Stop()
-        {
-            if (listener != null)
-            {
+        public void Stop() {
+            if (listener != null) {
                 Console.WriteLine($"RCON Server stopped: {listenIP}:{listenPort}");
                 listener.Stop();
                 listener = null;
             }
         }
 
-        private async Task ProcessRequest(HttpListenerContext listenerContext)
-        {
+        private async Task ProcessRequest(HttpListenerContext listenerContext) {
             WebSocketContext? webSocketContext;
-            try
-            {
+            try {
                 webSocketContext = await listenerContext.AcceptWebSocketAsync(subProtocol: null);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 listenerContext.Response.StatusCode = 500;
                 listenerContext.Response.Close();
                 Console.WriteLine("Exception: {0}", e);
@@ -147,32 +126,25 @@ namespace BattleBitRCON
             WebSocket webSocket = webSocketContext.WebSocket;
             clients.Add(webSocket);
 
-            try
-            {
+            try {
                 // Commands should be pretty short.
                 byte[] receiveBuffer = new byte[1024];
 
-                while (webSocket.State == WebSocketState.Open)
-                {
+                while (webSocket.State == WebSocketState.Open) {
                     WebSocketReceiveResult receiveResult = await webSocket.ReceiveAsync(
                         new ArraySegment<byte>(receiveBuffer),
                         CancellationToken.None
                     );
 
-                    if (receiveResult.MessageType == WebSocketMessageType.Text)
-                    {
+                    if (receiveResult.MessageType == WebSocketMessageType.Text) {
                         await ProcessCommand(webSocket, receiveResult, receiveBuffer);
-                    }
-                    else if (receiveResult.MessageType == WebSocketMessageType.Close)
-                    {
+                    } else if (receiveResult.MessageType == WebSocketMessageType.Close) {
                         await webSocket.CloseAsync(
                             WebSocketCloseStatus.NormalClosure,
                             "",
                             CancellationToken.None
                         );
-                    }
-                    else
-                    {
+                    } else {
                         await webSocket.CloseAsync(
                             WebSocketCloseStatus.InvalidMessageType,
                             "Only text frames are supported.",
@@ -180,29 +152,22 @@ namespace BattleBitRCON
                         );
                     }
                 }
-            }
-            catch (WebSocketException e)
-                when (e.InnerException is HttpListenerException exception
-                    && exception.ErrorCode == 995
-                )
-            {
+            } catch (WebSocketException e)
+                  when (e.InnerException is HttpListenerException exception
+                      && exception.ErrorCode == 995
+                  ) {
                 // The HTTP server was shutdown.
                 // We'll cleanup below and can ignore this error.
-            }
-            catch (WebSocketException)
-            {
+            } catch (WebSocketException) {
                 // Unrecoverable error. Log for monitoring purposes, but client should just open a
                 // new connection.
                 Console.WriteLine(
                     "RCON connection error. Closing connection for: {0}",
                     listenerContext.Request.RemoteEndPoint.Address.ToString()
                 );
-            }
-            finally
-            {
+            } finally {
                 // Clean up by disposing the WebSocket once it is closed/aborted.
-                if (webSocket != null)
-                {
+                if (webSocket != null) {
                     webSocket.Dispose();
                     clients.Remove(webSocket);
 
@@ -212,22 +177,18 @@ namespace BattleBitRCON
             }
         }
 
-        private async Task ProcessCommand(WebSocket ws, WebSocketReceiveResult result, byte[] buff)
-        {
-            try
-            {
+        private async Task ProcessCommand(WebSocket ws, WebSocketReceiveResult result, byte[] buff) {
+            try {
                 // Deserialize just enough to get the type
                 var cmd = JsonSerializer.Deserialize<Commands.CommandType>(
                     new ArraySegment<byte>(buff, 0, result.Count),
                     jsonSerializationOptions
                 );
 
-                if (cmd != null)
-                {
+                if (cmd != null) {
                     // Validate message type and create generic version of type
                     // to use when invoking parse and execute.
-                    if (cmd.Command != null && commandNames.ContainsKey(cmd.Command.ToLower()))
-                    {
+                    if (cmd.Command != null && commandNames.ContainsKey(cmd.Command.ToLower())) {
                         var commandType = commandNames[cmd.Command.ToLower()];
                         var genericType = commandType?.MakeGenericType(typeof(TPlayer));
                         var parse = genericType?.GetMethod("Parse");
@@ -238,8 +199,7 @@ namespace BattleBitRCON
                             || parse == null
                             || execute == null
                             || genericType == null
-                        )
-                        {
+                        ) {
                             throw new Exception("Unable to get Request class for command");
                         }
 
@@ -248,8 +208,7 @@ namespace BattleBitRCON
                             new object[1] { new ArraySegment<byte>(buff, 0, result.Count) }
                         );
 
-                        if (parsedCommand == null)
-                        {
+                        if (parsedCommand == null) {
                             throw new Exception("Unable to get Request class for command");
                         }
 
@@ -257,40 +216,30 @@ namespace BattleBitRCON
                             null,
                             new object[2] { gameServer, parsedCommand }
                         );
-                        if (response != null)
-                        {
+                        if (response != null) {
                             await SendMessage(ws, response);
                         }
-                    }
-                    else
-                    {
+                    } else {
                         throw new Commands.InvalidCommand(cmd.Command);
                     }
                 }
-            }
-            catch (Commands.InvalidCommand e)
-            {
+            } catch (Commands.InvalidCommand e) {
                 await SendMessage(ws, e);
             }
         }
 
-        private async Task processPendingMessages(WebSocket ws)
-        {
-            if (sendingMessages.GetValueOrDefault(ws, false) == true)
-            {
+        private async Task processPendingMessages(WebSocket ws) {
+            if (sendingMessages.GetValueOrDefault(ws, false) == true) {
                 return;
             }
 
             sendingMessages[ws] = true;
-            try
-            {
+            try {
                 var list = pendingMessages.GetValueOrDefault(ws, new ConcurrentQueue<object>());
 
-                while (list.Count > 0 && ws.State == WebSocketState.Open)
-                {
+                while (list.Count > 0 && ws.State == WebSocketState.Open) {
                     object? msg;
-                    if (list.TryDequeue(out msg))
-                    {
+                    if (list.TryDequeue(out msg)) {
                         await ws.SendAsync(
                             JsonSerializer.SerializeToUtf8Bytes(
                                 msg,
@@ -303,28 +252,22 @@ namespace BattleBitRCON
                         );
                     }
                 }
-            }
-            catch
-            {
+            } catch {
                 // Suppress errors sending messages. There is nothing for the user
                 // to do and it shouldn't matter.
-            }
-            finally
-            {
+            } finally {
                 sendingMessages[ws] = false;
             }
         }
 
-        public async Task SendMessage(WebSocket ws, object msg)
-        {
+        public async Task SendMessage(WebSocket ws, object msg) {
             var list = pendingMessages.GetOrAdd(ws, new ConcurrentQueue<object>());
             list.Enqueue(msg);
 
             await processPendingMessages(ws);
         }
 
-        public async Task BroadcastMessage(object msg)
-        {
+        public async Task BroadcastMessage(object msg) {
             await Task.WhenAll(
                 clients
                     .ToList()
